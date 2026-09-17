@@ -224,6 +224,147 @@ tok = AutoTokenizer.from_pretrained("sivasub987/iso20022-extract-53m")
 
 ---
 
+## Where this fits, and what it is worth
+
+### The workflow position
+
+In a payment operation the extractor sits between capture and validation. A
+document arrives by one of several channels, its fields are lifted into a
+canonical key space, and a validator decides whether it can be released or must
+be queued. Everything downstream is already deterministic. This is the one step
+that has been human because the input is unstructured.
+
+The reason to care is the shape of payment economics: enormous volume, thin
+per-item margin, and a standard measure called straight-through processing. Every
+point of STP lost converts directly into manual work, and manual work is where
+the margin goes.
+
+### "Why not just write regexes?"
+
+This is the right first question, and it has a measured answer rather than a
+sales answer. Two competent rule engines were built — label-anchored extraction,
+a normaliser per format, pattern fallbacks, and deterministic validators — and
+scored on the same 360 documents.
+
+| Extractor | STP | Field accuracy | XSD pass |
+| --- | --- | --- | --- |
+| `rules_v1` (one template) | 33.3% | 47.1% | 33.3% |
+| `rules_v2` (every synonym) | 51.7% | 89.4% | 100.0% |
+
+By difficulty, which is where the finding lives:
+
+| Extractor | clean | messy | hostile |
+| --- | --- | --- | --- |
+| `rules_v1` | **100.0%** | 0.0% | 0.0% |
+| `rules_v2` | 92.5% | 62.5% | **0.0%** |
+
+**`rules_v1` scores 100% on `clean` and exactly 0% on everything else.** Not 80%,
+not 60% — zero. A rules engine does not fail gradually. It succeeds completely
+inside the format it was written for and fails completely outside it.
+
+The consequence is that a rules engine does not have an accuracy. It has a
+**coverage**, and coverage is counted in formats. The cost of the rules approach
+is therefore not a percentage of documents. It is **one rule set per document
+format**, and the number of formats is a property of your customer base, not
+your volume.
+
+That gives a real decision procedure rather than a slogan:
+
+| Your situation | The right answer |
+| --- | --- |
+| One format, high volume, stable | Regex. Buying a model is waste. |
+| A handful of formats | Regex, plus normalisers per format |
+| Many formats, or formats you do not control | The rule maintenance exceeds the model |
+| Onboarding a new customer | Model: zero engineering. Rules: days, per customer |
+
+For a shop with three formats, regex wins outright. The claim here is not that
+models beat rules. It is that rules cost scales with format count while model
+cost is fixed, and that the crossover is a business input rather than a
+technical one.
+
+### What rules structurally cannot do
+
+The step function is a cost argument. There is also a capability argument, and it
+is the honest reason a rule engine plateaus.
+
+Given `Account: DE89370400440532013000`, a rule engine knows the value is an
+IBAN. It cannot know whether that account is the payer's or the beneficiary's,
+because that fact lives in the document's *meaning* and not in its surface form.
+When the label is missing, the pattern fallback has to guess by position, and it
+is wrong roughly half the time.
+
+That single limitation is what the exception rate is made of. In the measured
+recognition-tax run, damage attributed by cause came out as:
+
+```text
+  role      73   a real value from this document put in the wrong field
+  missing  877   nothing extracted; incomplete, so review sees it
+  caught   193   characters changed and a validator rejects it
+  silent     9   characters changed and nothing rejects it
+```
+
+The `silent` row is the dangerous one, and it is small here because validators
+catch most corruption. The `role` row is the one a bigger rule set does not fix.
+
+### The economics
+
+Exceptions are where the money is, so price them. At 100,000 messages/month, 8
+minutes per exception, and $45/hour loaded:
+
+| STP | Exceptions/month | Annual cost | FTE |
+| --- | --- | --- | --- |
+| 85.1% | 14,925 | $1.07M | 13.1 |
+| 64.2% | 35,821 | $2.58M | 31.4 |
+| 49.8% | 50,249 | **$3.62M** | 44.1 |
+
+**One STP point is worth $72,000/year** at this volume. The sensitivity to the two
+soft inputs, at the measured 49.8%:
+
+| min/exception | $25/h | $35/h | $45/h | $65/h | $90/h |
+| --- | --- | --- | --- | --- | --- |
+| 2 min | 0.5M | 0.7M | 0.9M | 1.3M | 1.8M |
+| 8 min | 2.0M | 2.8M | 3.6M | 5.2M | 7.2M |
+| 30 min | 7.5M | 10.6M | 13.6M | 19.6M | 27.1M |
+
+**And this is where the usual framing goes wrong.** The obvious question is
+whether to run inference on an API or locally, and that question is worth:
+
+```text
+  infrastructure delta at 100k/month   $56,000/year
+  STP delta, 49.8% -> 85%              $2,537,910/year
+```
+
+The STP difference is worth **45.3× the infrastructure difference**. The entire
+$20k build is repaid by **0.33 of one STP point**. Where inference runs is a
+rounding error next to how often the pipeline is right.
+
+Which reframes the local-versus-cloud argument entirely. Local wins here for
+data residency, determinism, and auditability. It does not win on cost, because
+cost was never the deciding term.
+
+### The honest position today
+
+This model does not yet beat the rule baseline. `rules_v2` reaches 51.7% document
+STP; this model is at 0% against a 50% target, with 71.7% field accuracy against
+90%. On the measured evidence, a competent rule engine is the better buy today,
+and saying otherwise would be the kind of claim this project exists to catch.
+
+What the work establishes is the other half of the decision. The rules path
+plateaus at the number of formats you have written, role ambiguity is not
+solvable by more patterns, and the money is concentrated in STP rather than in
+infrastructure. A model that reaches the gate converts all three of those into a
+fixed cost rather than a per-format one.
+
+### What would make this decision
+
+The gap is value accuracy on unseen values, and the lever is the distinct-value
+count in the corpus, which is a parameter rather than a redesign. The specific
+next experiment: raise the distinct value-sets until memorisation stops being an
+option, and measure whether field accuracy crosses 90% with document STP above
+50%. If it does, the comparison against `rules_v2` is worth running properly. If
+it plateaus well below on a corpus this clean, that is a real negative result
+and worth publishing as one.
+
 ## Where this goes
 
 The narrow case is a document type with a fixed field set, a validator for every

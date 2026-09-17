@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ISO 20022 extraction on a laptop GPU</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:  #f5f5f5;
+      --color-ink:    #2d3142;
+      --color-muted:  #4f5d75;
+      --color-accent: #eb6c36;
+      --font-sans:    'Geist', system-ui, sans-serif;
+      --font-serif:   'Instrument Serif', serif;
+      --font-mono:    'Geist Mono', ui-monospace, monospace;
+    }
+    html, body { width: 1180px; height: 1180px; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      padding: 58px 70px 48px;
+      display: flex;
+      flex-direction: column;
+    }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.20em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-family: var(--font-serif);
+      font-size: 58px;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.08;
+      margin-bottom: 11px;
+    }
+    .sub {
+      font-size: 24px;
+      line-height: 1.4;
+      color: var(--color-muted);
+      max-width: 960px;
+      margin-bottom: 4px;
+    }
+    svg { width: 100%; display: block; margin-top: 4px; flex: 0 0 auto; }
+
+    /* the achievement line — text, so it stays text */
+    .gate {
+      margin-top: auto;
+      padding-top: 26px;
+      border-top: 1.4px solid rgba(45,49,66,0.22);
+      display: flex;
+      align-items: baseline;
+      gap: 26px;
+    }
+    .gate .label {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+    }
+    .gate .result {
+      font-family: var(--font-sans);
+      font-size: 31px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--color-ink);
+    }
+    .gate .aside {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 16px;
+      color: var(--color-muted);
+    }
+  </style>
+</head>
+<body>
+  <p class="eyebrow">Local · 53M parameters · no API call</p>
+  <h1>ISO 20022 extraction on a laptop GPU</h1>
+  <p class="sub">Every value is validator-checked, and the model reports its own confidence.</p>
+
+  <svg viewBox="0 0 1040 812" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="card-title card-desc">
+    <title id="card-title">Local ISO 20022 extraction pipeline</title>
+    <desc id="card-desc">Payment correspondence passes through a 53M parameter model that emits two outputs from one forward pass. Field JSON goes to validators and then to a schema-valid ISO 20022 message. A confidence logit routes uncertain documents sideways to a human review queue.</desc>
+    <defs>
+      <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+        <circle cx="1" cy="1" r="1" fill="rgba(45,49,66,0.085)"/>
+      </pattern>
+      <marker id="arrow" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+        <polygon points="0 0, 9 3.5, 0 7" fill="#4f5d75"/>
+      </marker>
+      <marker id="arrow-accent" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+        <polygon points="0 0, 9 3.5, 0 7" fill="#eb6c36"/>
+      </marker>
+    </defs>
+
+    <rect width="100%" height="100%" fill="#f5f5f5"/>
+    <rect width="100%" height="100%" fill="url(#dots)" opacity="0.6"/>
+
+    <!-- ── arrows first (z-order: arrows sit beneath boxes) ── -->
+
+    <!-- correspondence -> model -->
+    <path d="M 520,90 V 126" fill="none" stroke="#4f5d75" stroke-width="1.8" marker-end="url(#arrow)"/>
+
+    <!-- model -> field JSON  (left branch) -->
+    <path d="M 430,266 V 292 Q 430,310 412,310 H 300 Q 282,310 282,328 V 348"
+          fill="none" stroke="#4f5d75" stroke-width="1.8" marker-end="url(#arrow)"/>
+
+    <!-- model -> confidence  (right branch — the novel route) -->
+    <path d="M 610,266 V 292 Q 610,310 628,310 H 740 Q 758,310 758,328 V 348"
+          fill="none" stroke="#eb6c36" stroke-width="1.8" marker-end="url(#arrow-accent)"/>
+
+    <!-- field JSON -> validators -->
+    <path d="M 282,458 V 536" fill="none" stroke="#4f5d75" stroke-width="1.8" marker-end="url(#arrow)"/>
+
+    <!-- confidence -> human review -->
+    <path d="M 758,458 V 536" fill="none" stroke="#eb6c36" stroke-width="1.8" marker-end="url(#arrow-accent)"/>
+
+    <!-- validators -> message -->
+    <path d="M 282,646 V 718" fill="none" stroke="#4f5d75" stroke-width="1.8" marker-end="url(#arrow)"/>
+
+    <!-- ── nodes ── -->
+
+    <!-- INPUT -->
+    <rect x="370" y="0" width="300" height="90" rx="7" fill="#ffffff" stroke="rgba(45,49,66,0.26)" stroke-width="1.2"/>
+    <text x="520" y="40" fill="#2d3142" font-size="24" font-family="'Geist', sans-serif" font-weight="500" text-anchor="middle">Payment</text>
+    <text x="520" y="70" fill="#2d3142" font-size="24" font-family="'Geist', sans-serif" font-weight="500" text-anchor="middle">correspondence</text>
+
+    <!-- MODEL — the focal node -->
+    <rect x="370" y="132" width="300" height="134" rx="7" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="2.2"/>
+    <text x="392" y="180" fill="#2d3142" font-size="32" font-family="'Geist', sans-serif" font-weight="600">53M model</text>
+    <text x="392" y="214" fill="#4f5d75" font-size="19" font-family="'Geist Mono', monospace">20 blocks · d 512</text>
+    <text x="392" y="243" fill="#4f5d75" font-size="19" font-family="'Geist Mono', monospace">hashed n-gram engram</text>
+
+    <!-- LEFT BRANCH: field JSON -->
+    <rect x="112" y="354" width="340" height="104" rx="7" fill="#ffffff" stroke="rgba(45,49,66,0.26)" stroke-width="1.2"/>
+    <text x="136" y="398" fill="#2d3142" font-size="25" font-family="'Geist', sans-serif" font-weight="500">field JSON</text>
+    <text x="136" y="428" fill="#4f5d75" font-size="18" font-family="'Geist Mono', monospace">canonical keys only</text>
+
+    <!-- RIGHT BRANCH: confidence -->
+    <rect x="604" y="354" width="340" height="104" rx="7" fill="rgba(235,108,54,0.06)" stroke="#eb6c36" stroke-width="1.8"/>
+    <text x="628" y="398" fill="#2d3142" font-size="25" font-family="'Geist', sans-serif" font-weight="500">confidence</text>
+    <text x="628" y="428" fill="#4f5d75" font-size="18" font-family="'Geist Mono', monospace">8 probes · same pass</text>
+
+    <!-- validators -->
+    <rect x="112" y="542" width="340" height="104" rx="7" fill="#ffffff" stroke="rgba(45,49,66,0.26)" stroke-width="1.2"/>
+    <text x="136" y="586" fill="#2d3142" font-size="25" font-family="'Geist', sans-serif" font-weight="500">validators</text>
+    <text x="136" y="616" fill="#4f5d75" font-size="18" font-family="'Geist Mono', monospace">IBAN mod-97 · BIC · ccy</text>
+
+    <!-- human review -->
+    <rect x="604" y="542" width="340" height="104" rx="7" fill="#ffffff" stroke="rgba(45,49,66,0.26)" stroke-width="1.2"/>
+    <text x="628" y="586" fill="#2d3142" font-size="25" font-family="'Geist', sans-serif" font-weight="500">human review</text>
+    <text x="628" y="616" fill="#4f5d75" font-size="18" font-family="'Geist Mono', monospace">low-confidence routing</text>
+
+    <!-- TERMINAL ARTIFACT -->
+    <rect x="112" y="724" width="340" height="88" rx="7" fill="#2d3142"/>
+    <text x="136" y="764" fill="#f5f5f5" font-size="25" font-family="'Geist', sans-serif" font-weight="500">ISO 20022 message</text>
+    <text x="136" y="792" fill="rgba(245,245,245,0.68)" font-size="18" font-family="'Geist Mono', monospace">schema-valid</text>
+  </svg>
+
+  <div class="gate">
+    <span class="label">Acceptance gate</span>
+    <span class="result">6 of 9 checks at 100%</span>
+    <span class="aside">field accuracy 71.7%</span>
+  </div>
+</body>
+</html>
