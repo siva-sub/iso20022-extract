@@ -62,7 +62,7 @@ hardware a bank already owns.
 4. The corpus is generated, not collected, and every value in it is validator-checked: IBAN mod-97 digits, ISO 9362 BICs, currency minor units, at three difficulty levels.
 5. The gate already returns 100% on format, key discipline, determinism, message assembly and routing agreement across a fresh document draw.
 6. The model reported 100% recall from step 1400 while its checkpoints measured zero; 32 uninitialised floats explained the disagreement, and three further measurement faults were hiding behind it.
-7. With all of them corrected, field accuracy stands at 70.7% against a 90% target on unseen values, which is the one part of the pipeline still being worked.
+7. With all of them corrected, field accuracy stands at 71.7% against a 90% target on unseen values, which is the one part of the pipeline still being worked.
 
 ## Evidence map
 
@@ -77,7 +77,7 @@ hardware a bank already owns.
 | Validation was leaking | 600 of 600 validation answers present in training before the split was changed | Measured at one corpus size |
 | Sampling covered one difficulty | After a difficulty-major build, a prefix of 8 is 7 clean documents, and the gate's prefix of 30 is 30 clean documents | Specific to this corpus ordering |
 | The held-out set sat inside the fitted region | 97.5% field recall on a slice of the training draw against 61.2% on a fresh draw | One model, one generator |
-| Field accuracy needs more training | 70.7% on a fresh draw against a 90% target, with document STP at 0% against 50% | Two configurations tried, neither yet at target |
+| Field accuracy needs more training | 71.7% on a fresh draw against a 90% target, with document STP at 0% against 50% | Two configurations tried, neither yet at target |
 | Local deployment is feasible on size alone | 53M parameters, deterministic greedy decoding, no network dependency at inference | Feasibility on size is not a claim about accuracy |
 
 ## What we learned about training small models
@@ -131,7 +131,7 @@ it near a payment.
 
 A reviewer may read this as a tooling story with a model attached, and will want
 to know whether the list of faults is complete. They were found in sequence
-rather than by audit, so there is no reason to think it is. The 70.7% is one
+rather than by audit, so there is no reason to think it is. The 71.7% is one
 model against one synthetic generator, and synthetic prose is easier than what
 arrives in a real payment operations inbox. A second configuration, giving each
 value-set one difficulty level to triple the distinct count, scored 24.7%, but it

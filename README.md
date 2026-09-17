@@ -17,6 +17,25 @@ build log.
 
 ---
 
+## Where the model sits
+
+```mermaid
+flowchart LR
+    DOC["Payment<br/>correspondence"] --> TOK["Tokenizer<br/>8192 vocab"]
+    TOK --> MDL["53M model<br/>20 blocks"]
+    MDL --> JSON["Generated<br/>field JSON"]
+    MDL -. "confidence logit" .-> REV
+    JSON --> VAL{"Validators<br/>IBAN mod-97<br/>BIC · currency units"}
+    VAL -->|"pass"| MSG["Schema-valid<br/>ISO 20022 message"]
+    VAL -->|"fail"| REV["Human<br/>review queue"]
+```
+
+The dotted edge is the part worth noticing. Confidence is a second output of
+the same forward pass, so an uncertain document becomes a routing decision
+rather than an error.
+
+---
+
 ## The interesting part
 
 The training log reported 100% field recall while the checkpoints it wrote
@@ -66,6 +85,34 @@ exists as a test rather than a one-off investigation.
 | Context | 256 tokens |
 | Engram memory | 2 layers (2, 12), 8192 slots × 128 dim × 2 heads |
 | Confidence head | 8 probes |
+
+```mermaid
+flowchart TB
+    subgraph STACK["53M decoder · 20 blocks · d_model 512"]
+        direction TB
+        IN["Token ids"] --> EMB["Embedding<br/>8192 × 512"]
+        EMB --> BLK["20 × transformer block"]
+        BLK --> FN["Final RMSNorm"]
+    end
+
+    subgraph ONE["Inside one block"]
+        direction TB
+        P["Pre-norm<br/>RMSNorm"] --> ATT["GQA attention<br/>8 query / 4 KV · RoPE"]
+        ATT --> R1["Residual add"]
+        R1 --> P2["Pre-norm<br/>RMSNorm"]
+        P2 --> FFN["SwiGLU FFN<br/>512 → 768"]
+        FFN --> R2["Residual add"]
+    end
+
+    ENG["Engram memory<br/>hashed n-gram read<br/>blocks 2 and 12"] -.-> BLK
+    FN --> LM["LM head<br/>tied to embedding"]
+    FN --> CH["Confidence head<br/>8 probes"]
+    LM --> OUT["Field JSON"]
+    CH --> ROUTE["Low-confidence<br/>routing"]
+```
+
+Each block is pre-norm with two residual adds, and the engram is a memory read
+injected into blocks 2 and 12 rather than extra attention positions.
 
 **Engram.** Token n-grams are hashed into a table of learnable vectors, fetched,
 and content-addressed against the current hidden state. It is a memory read added
@@ -164,15 +211,15 @@ The Python package is `iso20022_lab`; the repository is `iso20022-extract`.
 Weights are on Hugging Face, not here — 202 MB per checkpoint and 3.2 GB across
 all of them.
 
-- **Model:** [`siva-sub/iso20022-extract-53m`](https://huggingface.co/siva-sub/iso20022-extract-53m)
+- **Model:** [`sivasub987/iso20022-extract-53m`](https://huggingface.co/sivasub987/iso20022-extract-53m)
 
 ```python
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 model = AutoModelForCausalLM.from_pretrained(
-    "siva-sub/iso20022-extract-53m", trust_remote_code=True
+    "sivasub987/iso20022-extract-53m", trust_remote_code=True
 )
-tok = AutoTokenizer.from_pretrained("siva-sub/iso20022-extract-53m")
+tok = AutoTokenizer.from_pretrained("sivasub987/iso20022-extract-53m")
 ```
 
 ---
@@ -195,7 +242,7 @@ code is caught without consulting anything external.
 ## Limitations
 
 Synthetic prose is easier than what arrives in a real payment operations inbox.
-Field accuracy is 70.7% on a fresh draw against a 90% target, and document
+Field accuracy is 71.7% on a fresh draw against a 90% target, and document
 straight-through is 0% against 50%. One model has been trained against one
 generator. The list of metric faults was found in sequence rather than by audit,
 so there is no reason to think it is complete. Nothing here has been tested on
