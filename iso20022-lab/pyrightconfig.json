@@ -1,0 +1,12 @@
+{
+  "venvPath": "..",
+  "venv": ".venv",
+  "extraPaths": ["src"],
+  "pythonVersion": "3.12",
+  "exclude": ["schemas", "**/__pycache__"],
+  "reportMissingTypeStubs": "none",
+  "reportUnknownMemberType": "none",
+  "reportUnknownVariableType": "none",
+  "reportUnknownArgumentType": "none",
+  "reportUnknownParameterType": "none"
+}

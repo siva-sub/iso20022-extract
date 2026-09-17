@@ -1,0 +1,34 @@
+# --- Python ---
+.venv/
+__pycache__/
+*.py[cod]
+.ruff_cache/
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# --- Secrets: never commit ---
+.env
+.env.*
+!.env.example
+
+# --- Model checkpoints: published to Hugging Face, not here ---
+# 3.2 GB across step400..final. See README for the HF repo links.
+iso20022-lab/data/model/
+*.safetensors
+*.bin
+*.gguf
+
+# --- Generated corpora: reproducible from a seed, so not versioned ---
+iso20022-lab/data/distill/
+iso20022-lab/data/dual/
+iso20022-lab/data/mt/
+iso20022-lab/data/tokenizer/
+
+# --- Vendored schemas: tracked as a git submodule, not as files ---
+# --- Editor / OS ---
+.DS_Store
+.idea/
+.vscode/
+*.swp

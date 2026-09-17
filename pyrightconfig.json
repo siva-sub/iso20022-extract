@@ -1,0 +1,15 @@
+{
+  "venvPath": ".",
+  "venv": ".venv",
+  "pythonVersion": "3.12",
+  "extraPaths": ["iso20022-lab/src", "iso20022-lab"],
+  "exclude": [".venv", "**/__pycache__", "iso20022-lab/schemas", "iso20022-lab/data"],
+  "reportMissingTypeStubs": "none",
+  "reportUnknownMemberType": "none",
+  "reportUnknownVariableType": "none",
+  "reportUnknownArgumentType": "none",
+  "reportUnknownParameterType": "none",
+  "reportPrivateUsage": "none",
+  "reportExplicitAny": "none",
+  "reportPrivateImportUsage": "none"
+}

@@ -1,0 +1,6 @@
+{
+  "#": "Table pipe padding is pure formatting with no correctness value, and this",
+  "#2": "doc's ~30 tables are legible as-is. MD036 (emphasis-as-heading) stays on.",
+  "table-column-style": false,
+  "line-length": false
+}

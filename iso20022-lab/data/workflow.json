@@ -1,0 +1,86 @@
+{
+  "documents": 120,
+  "reports": [
+    {
+      "extractor": "rules_v1",
+      "actions": {
+        "STP": 40,
+        "VERIFY": 1,
+        "KEY": 79
+      },
+      "field_accuracy": 0.4775,
+      "invented_per_doc": 0.0,
+      "xsd_pass_rate": 0.3416666666666667,
+      "by_difficulty": {
+        "clean": {
+          "docs": 40,
+          "stp": 1.0,
+          "verify": 0.0,
+          "key": 0.0
+        },
+        "messy": {
+          "docs": 40,
+          "stp": 0.0,
+          "verify": 0.025,
+          "key": 0.975
+        },
+        "hostile": {
+          "docs": 40,
+          "stp": 0.0,
+          "verify": 0.0,
+          "key": 1.0
+        }
+      },
+      "failure_modes": {
+        "Amt_InstdAmt": 73,
+        "Amt_InstdAmt_Ccy": 73,
+        "ReqdExctnDt_Dt": 66,
+        "CdtrAcct_IBAN": 65,
+        "Cdtr_Nm": 64,
+        "CdtrAgt_BICFI": 62,
+        "Dbtr_Nm": 59,
+        "PmtId_EndToEndId": 59,
+        "RmtInf_Ustrd": 55,
+        "DbtrAcct_IBAN": 51
+      }
+    },
+    {
+      "extractor": "rules_v2",
+      "actions": {
+        "STP": 61,
+        "VERIFY": 59,
+        "KEY": 0
+      },
+      "field_accuracy": 0.8941666666666667,
+      "invented_per_doc": 0.0,
+      "xsd_pass_rate": 1.0,
+      "by_difficulty": {
+        "clean": {
+          "docs": 40,
+          "stp": 0.925,
+          "verify": 0.075,
+          "key": 0.0
+        },
+        "messy": {
+          "docs": 40,
+          "stp": 0.6,
+          "verify": 0.4,
+          "key": 0.0
+        },
+        "hostile": {
+          "docs": 40,
+          "stp": 0.0,
+          "verify": 1.0,
+          "key": 0.0
+        }
+      },
+      "failure_modes": {
+        "CdtrAcct_IBAN": 40,
+        "Amt_InstdAmt_Ccy": 39,
+        "Amt_InstdAmt": 33,
+        "ReqdExctnDt_Dt": 14,
+        "DbtrAcct_IBAN": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+[project]
+name = "iso20022-lab"
+version = "0.1.0"
+description = "Schema-driven extraction of ISO 20022 messages from unstructured documents"
+requires-python = ">=3.12"
+dependencies = [
+    "lxml>=6.0",
+    "xmlschema>=4.0",
+    "huggingface-hub>=1.0",
+]
+
+[project.optional-dependencies]
+# Extraction model. GPU extra pulls the CUDA JAX build, matching Needle's own
+# `cactus-needle[train,gpu]`; the CPU order is fine for validation work.
+extract = ["cactus-needle>=2.0.15"]
+train = ["cactus-needle[train]>=2.0.15"]
+train-gpu = ["cactus-needle[train,gpu]>=2.0.15"]
+dev = ["pytest>=8", "basedpyright>=1.30"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/iso20022_lab"]
+
+[tool.basedpyright]
+pythonVersion = "3.12"
+venvPath = "."
+venv = ".venv"
+
+[tool.ruff]
+line-length = 92
+target-version = "py312"

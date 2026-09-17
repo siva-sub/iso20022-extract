@@ -1,0 +1,15 @@
+# typos flags ISO 4217 currency codes as misspellings. They are not.
+[default.extend-words]
+JOD = "JOD"
+BIF = "BIF"
+CLF = "CLF"
+GNF = "GNF"
+KMF = "KMF"
+PYG = "PYG"
+RWF = "RWF"
+UGX = "UGX"
+UYI = "UYI"
+VUV = "VUV"
+XAF = "XAF"
+XOF = "XOF"
+XPF = "XPF"
